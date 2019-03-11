@@ -16,7 +16,7 @@ class BlogTests(TestCase):
 
         self.post = Post.objects.create(
             title='A ,test title',
-            body='Cice nice content',
+            text='Cice nice content',
             author=self.user,
         )
 
@@ -29,14 +29,12 @@ class BlogTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Cice nice content')
         self.assertTemplateUsed(response, 'home.html')
-        print(response, 'Content test response')
-        for i in response:
-            print (i, '/n')
+
 
     def test_post_content(self):
         self.assertEqual(f'{self.post.title}', 'A ,test title')
         self.assertEqual(f'{self.post.author}', 'testuser')
-        self.assertEqual(f'{self.post.body}', 'Cice nice content')
+        self.assertEqual(f'{self.post.text}', 'Cice nice content')
 
     def test_post_detail_view(self):
         response = self.client.get('/post/1/')
@@ -45,3 +43,26 @@ class BlogTests(TestCase):
         self.assertEqual(no_response.status_code, 404)
         self.assertContains(response, 'A ,test title')
         self.assertTemplateUsed(response, 'post_detail.html')
+
+    def test_post_create_view(self):
+        response = self.client.post(reverse('post_new'), {
+            'title': 'New title',
+            'author': self.user,
+            'text': 'New text'
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'New title')
+        self.assertContains(response, 'New text')
+
+    def test_post_update_view(self):
+        response = self.client.post(reverse('post_edit', args='1'), {
+            'title': 'Edited Title',
+            'text': 'Edited Text',
+        })
+
+        self.assertEqual(response.status_code, 302)
+
+    def test_post_delete_view(self):
+        response = self.client.get(reverse('post_delete', args='1'))
+        self.assertEqual(response.status_code, 200)
